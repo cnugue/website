@@ -1,0 +1,26 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- powershell: |
+    # Download and install Terraform
+    Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/1.13.3/terraform_1.13.3_windows_amd64.zip" -OutFile "terraform.zip"
+    Expand-Archive -Path "terraform.zip" -DestinationPath "$env:USERPROFILE\terraform"
+    $env:PATH = "$env:USERPROFILE\terraform;$env:PATH"
+    terraform -version
+  displayName: 'Install Terraform'
+
+- powershell: |
+    # Initialize Terraform
+    terraform init
+
+    # Plan the deployment
+    terraform plan -out=tfplan
+
+    # Apply the plan
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Init, Plan, Apply'
+
